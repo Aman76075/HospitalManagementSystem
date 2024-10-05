@@ -10,18 +10,24 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import entity.Appointment;
-import util.DBConnection;
+import util.DBConnUtil;
+import util.DBPropertyUtil;
 public class AppointDao {
-	Connection connection;
+	static Connection con;
 	Statement statement;
 	PreparedStatement preparedstatement;
 	ResultSet resultSet;
+	private static void getCon()
+	{
+		if(con==null)
+		con=DBConnUtil.getConnection(DBPropertyUtil.getConnString("db.properties"));
+	}
 	public Appointment getAppointmentById(int appointmentId) {
 		Appointment appointment = null;
 		try {
-			connection=DBConnection.getConnection();
+			getCon();
 			String sql = "Select * From Appointment where appointmentId = ?";
-			try (PreparedStatement preparedStatement = connection.prepareStatement(sql)){
+			try (PreparedStatement preparedStatement = con.prepareStatement(sql)){
 				preparedStatement.setInt(1, appointmentId);
 				try (ResultSet rs = preparedStatement.executeQuery()){
 					if (rs.next()) {
@@ -43,8 +49,8 @@ public class AppointDao {
 	 public List<Appointment> getAppointmentsForPatient(int patientId){
 		 List<Appointment> appointments = new ArrayList<>();
 		 try {
-			 connection = DBConnection.getConnection();
-			 PreparedStatement ps = connection.prepareStatement("SELECT * FROM Appointment WHERE patientId = ?");
+			 getCon();
+			 PreparedStatement ps = con.prepareStatement("SELECT * FROM Appointment WHERE patientId = ?");
 	            ps.setInt(1, patientId);
 	            ResultSet rs = ps.executeQuery();
 	            while (rs.next()) {
@@ -65,8 +71,8 @@ public class AppointDao {
 	 public List<Appointment> getAppointmentsForDoctor(int doctorId){
 		  List<Appointment> appointments = new ArrayList<>();
 		  try {
-			  connection = DBConnection.getConnection();
-			  PreparedStatement ps = connection.prepareStatement("SELECT * FROM Appointment WHERE doctorId = ?");
+			  getCon();
+			  PreparedStatement ps = con.prepareStatement("SELECT * FROM Appointment WHERE doctorId = ?");
 	            ps.setInt(1, doctorId);
 	            ResultSet rs = ps.executeQuery();
 	            while (rs.next()) {
@@ -86,8 +92,8 @@ public class AppointDao {
 	 }
 	 public boolean scheduleAppointment(Appointment appointment) {
 		 try {
-			  connection = DBConnection.getConnection();
-			  PreparedStatement ps = connection.prepareStatement("INSERT INTO Appointment (appointmentId, patientId, doctorId, appointmentDate, description) VALUES (?, ?, ?, ?, ?)");
+			  getCon();
+			  PreparedStatement ps = con.prepareStatement("INSERT INTO Appointment (appointmentId, patientId, doctorId, appointmentDate, description) VALUES (?, ?, ?, ?, ?)");
 	            ps.setInt(1, appointment.getAppointmentId());
 	            ps.setInt(2, appointment.getPatientId());
 	            ps.setInt(3, appointment.getDoctorId());
@@ -102,8 +108,8 @@ public class AppointDao {
 	 }
 	 public boolean updateAppointment(Appointment appointment) {
 		 try {
-			 connection = DBConnection.getConnection();
-			 PreparedStatement ps = connection.prepareStatement("UPDATE Appointment SET patientId = ?, doctorId = ?, appointmentDate = ?, description = ? WHERE appointmentId = ?");
+			 getCon();
+			 PreparedStatement ps = con.prepareStatement("UPDATE Appointment SET patientId = ?, doctorId = ?, appointmentDate = ?, description = ? WHERE appointmentId = ?");
 			 ps.setInt(1, appointment.getAppointmentId());
 	         ps.setInt(2, appointment.getPatientId());
 	         ps.setInt(3, appointment.getDoctorId());
@@ -117,8 +123,8 @@ public class AppointDao {
 	 }
 	 public boolean cancelAppointment(int appointmentId) {
 		 try {
-			 connection = DBConnection.getConnection();
-			 PreparedStatement ps = connection.prepareStatement("DELETE FROM Appointment WHERE appointmentId = ?");
+			 getCon();
+			 PreparedStatement ps = con.prepareStatement("DELETE FROM Appointment WHERE appointmentId = ?");
 	         ps.setInt(1, appointmentId);
 	         return ps.executeUpdate() > 0;
 		 }catch(Exception e) {
